@@ -1,0 +1,62 @@
+services:
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: wp
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: wp
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -uwp -pwp --silent" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  wordpress:
+    image: wordpress:6.6-apache
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+    volumes:
+      - ./data:/var/www/html
+
+  wpcli:
+    image: wordpress:cli-php8.3
+    depends_on:
+      db:
+        condition: service_healthy
+      wordpress:
+        condition: service_started
+    user: "33:33"
+    working_dir: /var/www/html
+    environment:
+      WP_CLI_CACHE_DIR: /tmp/.wp-cli
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WP_CLI_CONFIG_PATH: /var/www/html/wp-cli.yml
+      BASE_URL: http://localhost:8080
+      ADMIN_USER: admin
+      ADMIN_PASS: admin123
+      ADMIN_EMAIL: admin@example.com
+      BLOG_TITLE: Seeded WP
+      AUTHOR_USER: writer
+      AUTHOR_PASS: writer123
+      AUTHOR_EMAIL: writer@example.com
+    volumes:
+      - ./data:/var/www/html
+      - ./scripts:/scripts
+
+volumes:
+  db_data:

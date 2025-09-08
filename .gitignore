@@ -1,0 +1,60 @@
+# ---------------------------
+# OS / Editor cruft
+# ---------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*.tmp
+*~
+.history/
+
+# ---------------------------
+# Docker / env
+# ---------------------------
+.env
+.env.*
+docker-compose.override.yml
+# Named volumes (db_data, wp_data) are external to the repo, no need to ignore
+# But ignore if you ever bind-mount local dirs
+wp-content/
+db_data/
+wp_data/
+
+# ---------------------------
+# Logs & dumps
+# ---------------------------
+*.log
+logs/
+*.sql
+*.sql.gz
+*.dump
+*.tar
+*.zip
+
+# ---------------------------
+# Node / JS tooling
+# ---------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+dist/
+build/
+.cache/
+coverage/
+.eslintcache
+.stylelintcache
+.next/
+out/
+
+# ---------------------------
+# Misc tooling
+# ---------------------------
+*.lock-wscript
+*.tsbuildinfo
