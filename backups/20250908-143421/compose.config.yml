@@ -1,0 +1,94 @@
+name: import-from-cms
+services:
+  db:
+    command:
+      - --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: wp
+      MYSQL_PASSWORD: wp
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: wp
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -uwp -pwp --silent
+      timeout: 5s
+      interval: 5s
+      retries: 30
+    image: mysql:8.0
+    networks:
+      default: null
+    volumes:
+      - type: volume
+        source: db_data
+        target: /var/lib/mysql
+        volume: {}
+  wordpress:
+    depends_on:
+      db:
+        condition: service_healthy
+        required: true
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_USER: wp
+    image: wordpress:6.6-apache
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "8080"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: /Users/alexjover/WebDev/@storyblok/experiments/import-from-cms/data
+        target: /var/www/html
+        bind:
+          create_host_path: true
+  wpcli:
+    depends_on:
+      db:
+        condition: service_healthy
+        required: true
+      wordpress:
+        condition: service_started
+        required: true
+    environment:
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASS: admin123
+      ADMIN_USER: admin
+      AUTHOR_EMAIL: writer@example.com
+      AUTHOR_PASS: writer123
+      AUTHOR_USER: writer
+      BASE_URL: http://localhost:8080
+      BLOG_TITLE: Seeded WP
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_USER: wp
+      WP_CLI_CACHE_DIR: /tmp/.wp-cli
+      WP_CLI_CONFIG_PATH: /var/www/html/wp-cli.yml
+    image: wordpress:cli-php8.3
+    networks:
+      default: null
+    user: "33:33"
+    volumes:
+      - type: bind
+        source: /Users/alexjover/WebDev/@storyblok/experiments/import-from-cms/data
+        target: /var/www/html
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /Users/alexjover/WebDev/@storyblok/experiments/import-from-cms/scripts
+        target: /scripts
+        bind:
+          create_host_path: true
+    working_dir: /var/www/html
+networks:
+  default:
+    name: import-from-cms_default
+volumes:
+  db_data:
+    name: import-from-cms_db_data

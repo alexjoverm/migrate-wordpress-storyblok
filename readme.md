@@ -81,11 +81,11 @@ docker compose down -v
 
 ### 2. Setup and seed content
 
-You can use the snapshots of the Wordpress instance created (db + content):
+You can use the docker snapshots of the Wordpress instance (db + content):
 
 ```bash
 chmod +x scripts/backup.sh scripts/restore.sh
-./scripts/restore.sh backups/20250908-113220
+./scripts/restore.sh backups/20250908-143421/
 ```
 
 
@@ -112,7 +112,7 @@ docker compose run --rm --user root wpcli /scripts/seed.sh
 Pages:
 
 - EN (root): http://localhost:8080/ and http://localhost:8080/blog/
-- ES: http://localhost:8080/es/ and http://localhost:8080/es/blog/
+- ES: http://localhost:8080/es/inicio and http://localhost:8080/es/blog-es/
 
 REST API:
 
@@ -120,12 +120,3 @@ REST API:
 - ES posts: http://localhost:8080/es/wp-json/wp/v2/posts
 - EN pages: http://localhost:8080/wp-json/wp/v2/pages
 - ES pages: http://localhost:8080/es/wp-json/wp/v2/pages
-
-
-In case you need to **re-seed again**, use the `FORCE_RESEED` option:
-
-```bash
-docker compose run --rm --user 33:33 -e FORCE_RESEED="1" wpcli /scripts/seed.sh
-```
-
-### 2. 
