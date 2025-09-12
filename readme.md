@@ -26,8 +26,8 @@ scripts/
 1. **Setup environment:**
    ```bash
    cp .env.example .env # Add your Storyblok credentials
-
    chmod +x scripts/seed.sh
+   pnpm i
    ```
 
 2. **Start WordPress:**
