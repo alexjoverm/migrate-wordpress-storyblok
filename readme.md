@@ -113,8 +113,10 @@ As an example, in this project we're using Polylang for i18n in Wordpress, which
 
 And same with any other single feature of the CMS.
 
-[!NOTE]
-For this reason, for exporting we can't have a one-for-all-setups working package. Better to provide an exporter script as a starting point, that users can tailor to their needs.
+> [!NOTE]
+> For this reason, for exporting we can't have a one-for-all-setups working package. Better to provide an exporter script as a starting point, that users can tailor to their needs.
+
+
 
 
 
