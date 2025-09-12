@@ -30,7 +30,7 @@ scripts/
    pnpm i
    ```
 
-2. **Start WordPress:**
+2. **Start and seed WordPress:**
    ```bash
    docker compose up -d
    docker compose run --rm --user 33:33 wpcli /scripts/seed.sh
