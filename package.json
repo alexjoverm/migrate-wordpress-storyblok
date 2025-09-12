@@ -1,0 +1,28 @@
+{
+    "name": "wordpress-storyblok-migration",
+    "private": true,
+    "version": "1.0.0",
+    "description": "WordPress to Storyblok migration tools",
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "export": "pnpm --filter export start",
+        "map": "pnpm --filter mapping start",
+        "import": "pnpm --filter import start",
+        "migrate": "pnpm export && pnpm map && pnpm import",
+        "dev:export": "pnpm --filter export dev",
+        "dev:mapping": "pnpm --filter mapping dev",
+        "dev:import": "pnpm --filter import dev"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.0"
+    },
+    "dependencies": {
+        "dotenv": "^16.3.0"
+    },
+    "engines": {
+        "node": ">=18.0.0",
+        "pnpm": ">=8.0.0"
+    }
+}

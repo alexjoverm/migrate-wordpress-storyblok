@@ -28,7 +28,7 @@ services:
       WORDPRESS_DB_USER: wp
       WORDPRESS_DB_PASSWORD: wp
     volumes:
-      - ./data:/var/www/html
+      - ./wp_data:/var/www/html
 
   wpcli:
     image: wordpress:cli-php8.3
@@ -55,7 +55,7 @@ services:
       AUTHOR_PASS: writer123
       AUTHOR_EMAIL: writer@example.com
     volumes:
-      - ./data:/var/www/html
+      - ./wp_data:/var/www/html
       - ./scripts:/scripts
 
 volumes:

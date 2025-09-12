@@ -1,0 +1,17 @@
+{
+    "name": "@migration/import",
+    "version": "1.0.0",
+    "description": "Storyblok content importer",
+    "main": "src/index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js"
+    },
+    "dependencies": {
+        "@migration/shared": "workspace:*",
+        "@storyblok/management-api-client": "^0.1.2",
+        "fs-extra": "^11.2.0",
+        "p-limit": "^5.0.0"
+    }
+}

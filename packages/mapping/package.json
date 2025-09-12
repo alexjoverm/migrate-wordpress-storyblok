@@ -1,0 +1,17 @@
+{
+    "name": "@migration/mapping",
+    "version": "1.0.0",
+    "description": "WordPress to Storyblok content mapper",
+    "main": "src/index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js"
+    },
+    "dependencies": {
+        "@migration/shared": "workspace:*",
+        "fs-extra": "^11.2.0",
+        "cheerio": "^1.0.0-rc.12",
+        "slugify": "^1.6.6"
+    }
+}

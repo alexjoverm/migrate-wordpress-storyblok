@@ -1,8 +1,56 @@
 
 
-# TL;DR;
+# WordPress to Storyblok Migration PoC
 
-The project is created with:
+This project is a PoC to exemplify a full WordPress 
+
+
+## 📁 Project Structure
+```
+packages/
+├── export/          # WordPress content exporter
+├── mapping/         # Content transformer (WordPress → Storyblok)
+├── import/          # Storyblok importer
+└── shared/          # Utilities and helpers
+
+docker-compose/      # Docker to setup a clean Wordpress instance
+scripts/
+├── seed.sh             # Seeds the wordpress instance with content
+├── backup.sh           # Creates a dump of the WP SQL database + server content
+├── restore.sh          # Restores the dump
+└── polylang_setup.php  # Used by seed.sh - configures the i18n lang and routes
+```
+
+## Get started
+
+1. **Setup environment:**
+   ```bash
+   cp .env.example .env # Add your Storyblok credentials
+
+   chmod +x scripts/seed.sh
+   ```
+
+2. **Start WordPress:**
+   ```bash
+   docker compose up -d
+   docker compose run --rm --user 33:33 wpcli /scripts/seed.sh
+   ```
+
+3. **Run migration:**
+   ```bash
+   pnpm export && pnpm map && pnpm import
+   
+   # Or in one step
+   # pnpm migrate
+   ```
+
+
+## What's covered
+
+**Seeded WordPress instance:**
+
+Includes most of cases we want to test in a migration:
+
 - 2 languages: EN (default), and ES
 - 1 author (John Doe)
 - 3 articles with richtext content and featured images 
@@ -15,16 +63,38 @@ Routes are slug-based, the ones created:
 - `/es/inicio`, `/es/blog-es`, 3 article ones
 
 
-To setup and run the project:
+**Export Package:**
 
-```bash
-chmod +x scripts/seed.sh
-# in case you need to re-run the instance -> docker compose down -v
-docker compose up -d  
-docker compose run --rm --user 33:33 wpcli /scripts/seed.sh
-```
+Extracts content from WordPress REST API
 
-Then, open `http://localhost:8080` (***in a private tab***, as WP polylang tends to mess up and redirect home route)
+- Supports multilingual content (EN/ES)
+- Fetches posts, pages, categories, tags, users, media
+
+**Mapping Package:**
+
+Transforms WordPress data to Storyblok format
+
+- HTML to rich text conversion
+- Creates datasources for categories and authors
+- Handles featured images and internal links
+
+**Import Package:**
+
+Imports the content into Storyblok
+
+- Uses `@storyblok/management-api-client`
+- Creates components automatically
+- Imports stories, datasources, and assets
+- Respects API rate limits
+
+
+
+
+
+
+
+
+
 
 
 
@@ -33,7 +103,9 @@ Then, open `http://localhost:8080` (***in a private tab***, as WP polylang tends
 
 ## Migration notes
 
-Wordpress uses API endpoints within the `_links` property to cross-link to the right resources:
+### Cross linking
+
+WordPress uses href-based cross linking, pointing directly to the url of the right resource:
 
 ```json
 "_links": {
@@ -58,65 +130,5 @@ Wordpress uses API endpoints within the `_links` property to cross-link to the r
 
 ### Categories
 
-Depending on the user's intention, you can use `tags` or `stories`. With tags you get some extra search functionality, while you won't get de-facto translation (you could use a datasource tho for that). With stories you'd need to resolve relations.
+Depending on the user's intention, you can use `tags`, `datasources` or `stories`. With tags you get some extra search functionality, while you won't get de-facto translation (you could use a datasource tho for that). With stories you'd need to resolve relations.
 
-
-## Development notes
-
-### 1. Setup Wordpress instance through Docker
-
-- Use `docker-compose.yml` to spin up a wordpress instance
-
-Run:
-
-```bash
-docker compose up -d
-```
-
-In case you need to _"clean up"_ and start from scratch, use:
-
-```bash
-docker compose down -v
-```
-
-### 2. Setup and seed content
-
-You can use the docker snapshots of the Wordpress instance (db + content):
-
-```bash
-chmod +x scripts/backup.sh scripts/restore.sh
-./scripts/restore.sh backups/20250908-143421/
-```
-
-
-For seeding from scratch, follow steps below.
-
----
-
-Use `seed.sh` to seed the content of the project, configure i18n and minimal layout and theme.
-
-Give permission:
-
-```bash
-chmod +x scripts/seed.sh
-```
-
-Run this to enable multisite as `root`, and seed all the content using `www-data` user:
-
-```bash
-docker compose run --rm --user root wpcli /scripts/seed.sh
-```
-
-**Verify**
-
-Pages:
-
-- EN (root): http://localhost:8080/ and http://localhost:8080/blog/
-- ES: http://localhost:8080/es/inicio and http://localhost:8080/es/blog-es/
-
-REST API:
-
-- EN posts: http://localhost:8080/wp-json/wp/v2/posts
-- ES posts: http://localhost:8080/es/wp-json/wp/v2/posts
-- EN pages: http://localhost:8080/wp-json/wp/v2/pages
-- ES pages: http://localhost:8080/es/wp-json/wp/v2/pages
