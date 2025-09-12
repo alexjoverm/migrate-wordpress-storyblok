@@ -146,3 +146,13 @@ WordPress uses href-based cross linking, pointing directly to the url of the rig
 
 Depending on the user's intention, you can use `tags`, `datasources` or `stories`. With tags you get some extra search functionality, while you won't get de-facto translation (you could use a datasource tho for that). With stories you'd need to resolve relations.
 
+
+## Ideas for Migration Tooling
+
+**1. Exporting tooling**
+
+- `downloadAsset(url)`: should include both the asset and associated metadata
+
+**2. Mapping tooling**
+
+
