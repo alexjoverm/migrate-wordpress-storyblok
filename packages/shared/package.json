@@ -6,6 +6,6 @@
     "type": "module",
     "dependencies": {
         "cheerio": "^1.0.0-rc.12",
-        "@storyblok/richtext": "^1.0.0"
+        "@storyblok/richtext": "^3.8.0"
     }
 }

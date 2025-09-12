@@ -193,8 +193,19 @@ get_or_import_media () { # $1=title, $2=local path
   echo "$id"
 }
 
+# Ensure uploads directory exists with current year/month
+CURRENT_YEAR=$(date +%Y)
+CURRENT_MONTH=$(date +%m)
+UPLOAD_PATH="wp-content/uploads/${CURRENT_YEAR}/${CURRENT_MONTH}"
+mkdir -p "$UPLOAD_PATH"
+
 MEDIA_COFFEE_ID="$(get_or_import_media 'Coffee Large' seeds/coffee.jpg)"
 MEDIA_BEACH_ID="$(get_or_import_media  'Beach Large'  seeds/beach.jpg)"
+
+# Copy the actual files to where WordPress expects them (for file system access)
+# This ensures the files are accessible via HTTP and can be downloaded by export scripts
+cp seeds/coffee.jpg "${UPLOAD_PATH}/coffee-2.jpg" 2>/dev/null || true
+cp seeds/beach.jpg "${UPLOAD_PATH}/beach-2.jpg" 2>/dev/null || true
 
 # -------------------------
 # Posts – rich text only (no inline images)

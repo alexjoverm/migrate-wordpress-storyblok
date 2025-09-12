@@ -1,5 +1,30 @@
 import * as cheerio from 'cheerio';
 import { htmlToStoryblokRichtext } from '@storyblok/richtext/html-parser';
+import fs from 'fs';
+import path from 'path';
+
+/**
+ * Find workspace root by looking for workspace indicator files
+ */
+export function findWorkspaceRoot(startDir = process.cwd()) {
+    let currentDir = startDir;
+
+    while (currentDir !== path.dirname(currentDir)) {
+        // Check for workspace indicators
+        const packageJsonPath = path.join(currentDir, 'package.json');
+        const workspaceYamlPath = path.join(currentDir, 'pnpm-workspace.yaml');
+
+        if (fs.existsSync(workspaceYamlPath) ||
+            (fs.existsSync(packageJsonPath) &&
+                JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).workspaces)) {
+            return currentDir;
+        }
+
+        currentDir = path.dirname(currentDir);
+    }
+
+    return process.cwd(); // fallback
+}
 
 /**
  * Converts HTML content to Storyblok rich text format using official converter

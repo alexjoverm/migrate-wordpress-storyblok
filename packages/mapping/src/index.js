@@ -4,14 +4,16 @@ import * as cheerio from 'cheerio';
 import slugify from 'slugify';
 import { fileURLToPath } from 'url';
 import { config } from 'dotenv';
+import { convertHtmlToRichText, findWorkspaceRoot } from '@migration/shared';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 config();
 
-const INPUT_DIR = process.env.INPUT_DIR || './exported-data';
-const OUTPUT_DIR = process.env.MAPPING_OUTPUT_DIR || './mapped-data';
+const WORKSPACE_ROOT = findWorkspaceRoot();
+const INPUT_DIR = process.env.INPUT_DIR || path.join(WORKSPACE_ROOT, 'exported-data');
+const OUTPUT_DIR = process.env.MAPPING_OUTPUT_DIR || path.join(WORKSPACE_ROOT, 'mapped-data');
 
 class WordPressToStoryblokMapper {
     constructor(inputDir, outputDir) {

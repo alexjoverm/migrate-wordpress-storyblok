@@ -103,6 +103,20 @@ Imports the content into Storyblok
 
 ## Migration notes
 
+### Custom setups
+
+When it comes to exporting, the same CMS can have totally different setups.
+
+As an example, in this project we're using Polylang for i18n in Wordpress, which does its things in its way. For instance, when using Polylang you'll get languages via `http://localhost:8080/wp-json/pll/v1/languages`. But other plugins are going to work differently.
+
+And same with any other single feature of the CMS.
+
+[!NOTE]
+For this reason, for exporting we can't have a one-for-all-setups working package. Better to provide an exporter script as a starting point, that users can tailor to their needs.
+
+
+
+
 ### Cross linking
 
 WordPress uses href-based cross linking, pointing directly to the url of the right resource:

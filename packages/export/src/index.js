@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { config } from 'dotenv';
+import { findWorkspaceRoot } from '@migration/shared';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,7 +10,8 @@ const __dirname = path.dirname(__filename);
 config();
 
 const WORDPRESS_BASE_URL = process.env.WORDPRESS_URL || 'http://localhost:8080';
-const OUTPUT_DIR = process.env.OUTPUT_DIR || './exported-data';
+const WORKSPACE_ROOT = findWorkspaceRoot();
+const OUTPUT_DIR = process.env.OUTPUT_DIR || path.join(WORKSPACE_ROOT, 'exported-data');
 
 class WordPressExporter {
     constructor(baseUrl, outputDir) {
@@ -35,31 +37,33 @@ class WordPressExporter {
 
         try {
             // Export content for both languages (EN and ES)
-            const languages = ['', '/es'];
+            const languages = [
+                { code: 'en', name: 'English' },
+                { code: 'es', name: 'Español' }
+            ];
 
-            for (const lang of languages) {
-                const langDir = lang === '' ? 'en' : 'es';
-                const langOutputDir = path.join(this.outputDir, langDir);
+            for (const language of languages) {
+                const langOutputDir = path.join(this.outputDir, language.code);
                 await fs.ensureDir(langOutputDir);
 
-                console.log(`📝 Exporting ${langDir.toUpperCase()} content...`);
+                console.log(`📝 Exporting ${language.name} content...`);
 
-                const posts = await this.exportPosts(lang, langOutputDir);
-                const pages = await this.exportPages(lang, langOutputDir);
-                const categories = await this.exportCategories(lang, langOutputDir);
-                const tags = await this.exportTags(lang, langOutputDir);
+                const posts = await this.exportPosts(language.code, langOutputDir);
+                const pages = await this.exportPages(language.code, langOutputDir);
+                const categories = await this.exportCategories(language.code, langOutputDir);
+                const tags = await this.exportTags(language.code, langOutputDir);
 
-                exportSummary.languages[langDir] = {
+                exportSummary.languages[language.code] = {
                     posts: posts.length,
                     pages: pages.length,
                     categories: categories.length,
                     tags: tags.length
                 };
 
-                // Only export users and media once (they're global regarless of language)
-                if (lang === '') {
-                    const users = await this.exportUsers(langOutputDir);
-                    const mediaResult = await this.exportMedia(langOutputDir);
+                // Only export users and media once (they're global regardless of language)
+                if (language.code === 'en') {
+                    const users = await this.exportUsers(this.outputDir);
+                    const mediaResult = await this.exportMedia(this.outputDir);
 
                     exportSummary.users = users.length;
                     exportSummary.assets = mediaResult;
@@ -77,32 +81,40 @@ class WordPressExporter {
         }
     }
 
-    async exportPosts(lang, outputDir) {
+    async exportPosts(langCode, outputDir) {
         console.log(`  📄 Exporting posts...`);
-        const posts = await this.fetchAllPaginated(`${lang}/wp-json/wp/v2/posts`);
-        await this.saveToFile(path.join(outputDir, 'posts.json'), posts);
-        return posts;
+        const allPosts = await this.fetchAllPaginated(`/wp-json/wp/v2/posts`);
+        const langPosts = this.filterByLanguage(allPosts, langCode);
+        await this.saveToFile(path.join(outputDir, 'posts.json'), langPosts);
+        console.log(`    ✓ Found ${langPosts.length} posts for ${langCode.toUpperCase()}`);
+        return langPosts;
     }
 
-    async exportPages(lang, outputDir) {
+    async exportPages(langCode, outputDir) {
         console.log(`  📋 Exporting pages...`);
-        const pages = await this.fetchAllPaginated(`${lang}/wp-json/wp/v2/pages`);
-        await this.saveToFile(path.join(outputDir, 'pages.json'), pages);
-        return pages;
+        const allPages = await this.fetchAllPaginated(`/wp-json/wp/v2/pages`);
+        const langPages = this.filterByLanguage(allPages, langCode);
+        await this.saveToFile(path.join(outputDir, 'pages.json'), langPages);
+        console.log(`    ✓ Found ${langPages.length} pages for ${langCode.toUpperCase()}`);
+        return langPages;
     }
 
-    async exportCategories(lang, outputDir) {
+    async exportCategories(langCode, outputDir) {
         console.log(`  🏷️  Exporting categories...`);
-        const categories = await this.fetchAllPaginated(`${lang}/wp-json/wp/v2/categories`);
-        await this.saveToFile(path.join(outputDir, 'categories.json'), categories);
-        return categories;
+        const allCategories = await this.fetchAllPaginated(`/wp-json/wp/v2/categories`);
+        const langCategories = this.filterByLanguage(allCategories, langCode);
+        await this.saveToFile(path.join(outputDir, 'categories.json'), langCategories);
+        console.log(`    ✓ Found ${langCategories.length} categories for ${langCode.toUpperCase()}`);
+        return langCategories;
     }
 
-    async exportTags(lang, outputDir) {
-        console.log(`  #️⃣  Exporting tags...`);
-        const tags = await this.fetchAllPaginated(`${lang}/wp-json/wp/v2/tags`);
-        await this.saveToFile(path.join(outputDir, 'tags.json'), tags);
-        return tags;
+    async exportTags(langCode, outputDir) {
+        console.log(`  🔖 Exporting tags...`);
+        const allTags = await this.fetchAllPaginated(`/wp-json/wp/v2/tags`);
+        const langTags = this.filterByLanguage(allTags, langCode);
+        await this.saveToFile(path.join(outputDir, 'tags.json'), langTags);
+        console.log(`    ✓ Found ${langTags.length} tags for ${langCode.toUpperCase()}`);
+        return langTags;
     }
 
     async exportUsers(outputDir) {
@@ -270,6 +282,24 @@ class WordPressExporter {
         }
 
         return results;
+    }
+
+    // Filter content by language based on the link URL
+    filterByLanguage(items, langCode) {
+        return items.filter(item => {
+            if (!item.link) return false;
+
+            // Spanish content has links starting with /es/
+            const isSpanish = item.link.includes('/es/');
+
+            if (langCode === 'es') {
+                return isSpanish;
+            } else if (langCode === 'en') {
+                return !isSpanish;
+            }
+
+            return false;
+        });
     }
 
     async saveToFile(filePath, data) {

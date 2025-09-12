@@ -23,7 +23,8 @@ docker-compose.override.yml
 wp-content/
 db_data/
 wp_data/
-exported_data/
+exported-data/
+mapped-data/
 
 # ---------------------------
 # Logs & dumps
