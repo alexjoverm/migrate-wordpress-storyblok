@@ -38,7 +38,9 @@ scripts/
 
 3. **Run migration:**
    ```bash
-   pnpm export && pnpm map && pnpm import
+   pnpm run export
+   pnpm run map
+   pnpm run import
    
    # Or in one step
    # pnpm migrate
