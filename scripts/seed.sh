@@ -163,9 +163,178 @@ BLOG_LOOP='<!-- wp:query {"queryId":1,"query":{"perPage":9,"pages":0,"offset":0,
 <!-- /wp:query-pagination --></div>
 <!-- /wp:query -->'
 
-# Home pages: simple text only
-HOME_EN_CONTENT='<p>Welcome! Visit the Blog to see our latest articles.</p>'
-HOME_ES_CONTENT='<p>¡Bienvenido! Visita el Blog para ver nuestras últimas publicaciones.</p>'
+# Home pages: landing page content with hero and grid sections
+HOME_EN_CONTENT='<!-- wp:cover {"url":"https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80","dimRatio":40,"overlayColor":"black","minHeight":60,"contentPosition":"center center","align":"full"} -->
+<div class="wp-block-cover alignfull" style="min-height:60vh"><span aria-hidden="true" class="wp-block-cover__background has-black-background-color has-background-dim-40 has-background-dim"></span><img class="wp-block-cover__image-background" alt="" src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80" data-object-fit="cover"/><div class="wp-block-cover__inner-container"><!-- wp:group {"layout":{"type":"constrained","contentSize":"800px"}} -->
+<div class="wp-block-group"><!-- wp:heading {"textAlign":"center","level":1,"style":{"typography":{"fontSize":"3.5rem","fontWeight":"700"}},"textColor":"white"} -->
+<h1 class="wp-block-heading has-text-align-center has-white-color has-text-color" style="font-size:3.5rem;font-weight:700">Discover Your Next Adventure</h1>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.25rem"}},"textColor":"white"} -->
+<p class="has-text-align-center has-white-color has-text-color" style="font-size:1.25rem">Explore amazing destinations, discover hidden gems, and create unforgettable memories with our curated travel guides and lifestyle tips.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+<div class="wp-block-buttons"><!-- wp:button {"backgroundColor":"primary","style":{"border":{"radius":"25px"},"spacing":{"padding":{"left":"2rem","right":"2rem","top":"0.75rem","bottom":"0.75rem"}}}} -->
+<div class="wp-block-button"><a class="wp-block-button__link has-primary-background-color has-background wp-element-button" href="/blog" style="border-radius:25px;padding-top:0.75rem;padding-right:2rem;padding-bottom:0.75rem;padding-left:2rem">Start Exploring</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons --></div>
+<!-- /wp:group --></div></div>
+<!-- /wp:cover -->
+
+<!-- wp:spacer {"height":"4rem"} -->
+<div style="height:4rem" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:group {"layout":{"type":"constrained"}} -->
+<div class="wp-block-group"><!-- wp:heading {"textAlign":"center","level":2,"style":{"typography":{"fontSize":"2.5rem","fontWeight":"600"},"spacing":{"margin":{"bottom":"1rem"}}}} -->
+<h2 class="wp-block-heading has-text-align-center" style="margin-bottom:1rem;font-size:2.5rem;font-weight:600">Why Choose Us</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.1rem"},"spacing":{"margin":{"bottom":"3rem"}}}} -->
+<p class="has-text-align-center" style="margin-bottom:3rem;font-size:1.1rem">Everything you need for your perfect getaway</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:columns {"align":"wide"} -->
+<div class="wp-block-columns alignwide"><!-- wp:column -->
+<div class="wp-block-column"><!-- wp:group {"style":{"spacing":{"padding":{"top":"2rem","bottom":"2rem","left":"1.5rem","right":"1.5rem"}},"border":{"radius":"12px"}},"backgroundColor":"light-gray","layout":{"type":"constrained"}} -->
+<div class="wp-block-group has-light-gray-background-color has-background" style="border-radius:12px;padding-top:2rem;padding-right:1.5rem;padding-bottom:2rem;padding-left:1.5rem"><!-- wp:image {"align":"center","width":"80px","height":"80px","sizeSlug":"full","linkDestination":"none","style":{"border":{"radius":"50%"}}} -->
+<figure class="wp-block-image aligncenter size-full is-resized" style="border-radius:50%"><img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=160&h=160&q=80" alt="Mountain landscape" style="border-radius:50%;width:80px;height:80px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {"textAlign":"center","level":3,"style":{"spacing":{"margin":{"top":"1rem","bottom":"1rem"}}}} -->
+<h3 class="wp-block-heading has-text-align-center" style="margin-top:1rem;margin-bottom:1rem">Expert Guides</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"lineHeight":"1.6"}}} -->
+<p class="has-text-align-center" style="line-height:1.6">Curated by travel experts with years of experience exploring the world''s most beautiful destinations.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:group {"style":{"spacing":{"padding":{"top":"2rem","bottom":"2rem","left":"1.5rem","right":"1.5rem"}},"border":{"radius":"12px"}},"backgroundColor":"light-gray","layout":{"type":"constrained"}} -->
+<div class="wp-block-group has-light-gray-background-color has-background" style="border-radius:12px;padding-top:2rem;padding-right:1.5rem;padding-bottom:2rem;padding-left:1.5rem"><!-- wp:image {"align":"center","width":"80px","height":"80px","sizeSlug":"full","linkDestination":"none","style":{"border":{"radius":"50%"}}} -->
+<figure class="wp-block-image aligncenter size-full is-resized" style="border-radius:50%"><img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=160&h=160&q=80" alt="Compass on map" style="border-radius:50%;width:80px;height:80px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {"textAlign":"center","level":3,"style":{"spacing":{"margin":{"top":"1rem","bottom":"1rem"}}}} -->
+<h3 class="wp-block-heading has-text-align-center" style="margin-top:1rem;margin-bottom:1rem">Hidden Gems</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"lineHeight":"1.6"}}} -->
+<p class="has-text-align-center" style="line-height:1.6">Discover off-the-beaten-path locations and authentic experiences that most tourists never find.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:group {"style":{"spacing":{"padding":{"top":"2rem","bottom":"2rem","left":"1.5rem","right":"1.5rem"}},"border":{"radius":"12px"}},"backgroundColor":"light-gray","layout":{"type":"constrained"}} -->
+<div class="wp-block-group has-light-gray-background-color has-background" style="border-radius:12px;padding-top:2rem;padding-right:1.5rem;padding-bottom:2rem;padding-left:1.5rem"><!-- wp:image {"align":"center","width":"80px","height":"80px","sizeSlug":"full","linkDestination":"none","style":{"border":{"radius":"50%"}}} -->
+<figure class="wp-block-image aligncenter size-full is-resized" style="border-radius:50%"><img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=160&h=160&q=80" alt="Heart hands at sunset" style="border-radius:50%;width:80px;height:80px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {"textAlign":"center","level":3,"style":{"spacing":{"margin":{"top":"1rem","bottom":"1rem"}}}} -->
+<h3 class="wp-block-heading has-text-align-center" style="margin-top:1rem;margin-bottom:1rem">Lifestyle Tips</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"lineHeight":"1.6"}}} -->
+<p class="has-text-align-center" style="line-height:1.6">Practical advice for living well while traveling, from local cuisine to cultural etiquette and wellness.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group --></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns --></div>
+<!-- /wp:group -->
+
+<!-- wp:spacer {"height":"2rem"} -->
+<div style="height:2rem" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->'
+
+HOME_ES_CONTENT='<!-- wp:cover {"url":"https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80","dimRatio":40,"overlayColor":"black","minHeight":60,"contentPosition":"center center","align":"full"} -->
+<div class="wp-block-cover alignfull" style="min-height:60vh"><span aria-hidden="true" class="wp-block-cover__background has-black-background-color has-background-dim-40 has-background-dim"></span><img class="wp-block-cover__image-background" alt="" src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80" data-object-fit="cover"/><div class="wp-block-cover__inner-container"><!-- wp:group {"layout":{"type":"constrained","contentSize":"800px"}} -->
+<div class="wp-block-group"><!-- wp:heading {"textAlign":"center","level":1,"style":{"typography":{"fontSize":"3.5rem","fontWeight":"700"}},"textColor":"white"} -->
+<h1 class="wp-block-heading has-text-align-center has-white-color has-text-color" style="font-size:3.5rem;font-weight:700">Descubre Tu Próxima Aventura</h1>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.25rem"}},"textColor":"white"} -->
+<p class="has-text-align-center has-white-color has-text-color" style="font-size:1.25rem">Explora destinos increíbles, descubre joyas ocultas y crea recuerdos inolvidables con nuestras guías de viaje y consejos de estilo de vida.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+<div class="wp-block-buttons"><!-- wp:button {"backgroundColor":"primary","style":{"border":{"radius":"25px"},"spacing":{"padding":{"left":"2rem","right":"2rem","top":"0.75rem","bottom":"0.75rem"}}}} -->
+<div class="wp-block-button"><a class="wp-block-button__link has-primary-background-color has-background wp-element-button" href="/es/blog-es" style="border-radius:25px;padding-top:0.75rem;padding-right:2rem;padding-bottom:0.75rem;padding-left:2rem">Empezar a Explorar</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons --></div>
+<!-- /wp:group --></div></div>
+<!-- /wp:cover -->
+
+<!-- wp:spacer {"height":"4rem"} -->
+<div style="height:4rem" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:group {"layout":{"type":"constrained"}} -->
+<div class="wp-block-group"><!-- wp:heading {"textAlign":"center","level":2,"style":{"typography":{"fontSize":"2.5rem","fontWeight":"600"},"spacing":{"margin":{"bottom":"1rem"}}}} -->
+<h2 class="wp-block-heading has-text-align-center" style="margin-bottom:1rem;font-size:2.5rem;font-weight:600">¿Por Qué Elegirnos?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.1rem"},"spacing":{"margin":{"bottom":"3rem"}}}} -->
+<p class="has-text-align-center" style="margin-bottom:3rem;font-size:1.1rem">Todo lo que necesitas para tu escapada perfecta</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:columns {"align":"wide"} -->
+<div class="wp-block-columns alignwide"><!-- wp:column -->
+<div class="wp-block-column"><!-- wp:group {"style":{"spacing":{"padding":{"top":"2rem","bottom":"2rem","left":"1.5rem","right":"1.5rem"}},"border":{"radius":"12px"}},"backgroundColor":"light-gray","layout":{"type":"constrained"}} -->
+<div class="wp-block-group has-light-gray-background-color has-background" style="border-radius:12px;padding-top:2rem;padding-right:1.5rem;padding-bottom:2rem;padding-left:1.5rem"><!-- wp:image {"align":"center","width":"80px","height":"80px","sizeSlug":"full","linkDestination":"none","style":{"border":{"radius":"50%"}}} -->
+<figure class="wp-block-image aligncenter size-full is-resized" style="border-radius:50%"><img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=160&h=160&q=80" alt="Paisaje de montaña" style="border-radius:50%;width:80px;height:80px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {"textAlign":"center","level":3,"style":{"spacing":{"margin":{"top":"1rem","bottom":"1rem"}}}} -->
+<h3 class="wp-block-heading has-text-align-center" style="margin-top:1rem;margin-bottom:1rem">Guías Expertas</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"lineHeight":"1.6"}}} -->
+<p class="has-text-align-center" style="line-height:1.6">Creadas por expertos en viajes con años de experiencia explorando los destinos más hermosos del mundo.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:group {"style":{"spacing":{"padding":{"top":"2rem","bottom":"2rem","left":"1.5rem","right":"1.5rem"}},"border":{"radius":"12px"}},"backgroundColor":"light-gray","layout":{"type":"constrained"}} -->
+<div class="wp-block-group has-light-gray-background-color has-background" style="border-radius:12px;padding-top:2rem;padding-right:1.5rem;padding-bottom:2rem;padding-left:1.5rem"><!-- wp:image {"align":"center","width":"80px","height":"80px","sizeSlug":"full","linkDestination":"none","style":{"border":{"radius":"50%"}}} -->
+<figure class="wp-block-image aligncenter size-full is-resized" style="border-radius:50%"><img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=160&h=160&q=80" alt="Brújula en mapa" style="border-radius:50%;width:80px;height:80px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {"textAlign":"center","level":3,"style":{"spacing":{"margin":{"top":"1rem","bottom":"1rem"}}}} -->
+<h3 class="wp-block-heading has-text-align-center" style="margin-top:1rem;margin-bottom:1rem">Joyas Ocultas</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"lineHeight":"1.6"}}} -->
+<p class="has-text-align-center" style="line-height:1.6">Descubre lugares fuera de los caminos trillados y experiencias auténticas que la mayoría de turistas nunca encuentran.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:group {"style":{"spacing":{"padding":{"top":"2rem","bottom":"2rem","left":"1.5rem","right":"1.5rem"}},"border":{"radius":"12px"}},"backgroundColor":"light-gray","layout":{"type":"constrained"}} -->
+<div class="wp-block-group has-light-gray-background-color has-background" style="border-radius:12px;padding-top:2rem;padding-right:1.5rem;padding-bottom:2rem;padding-left:1.5rem"><!-- wp:image {"align":"center","width":"80px","height":"80px","sizeSlug":"full","linkDestination":"none","style":{"border":{"radius":"50%"}}} -->
+<figure class="wp-block-image aligncenter size-full is-resized" style="border-radius:50%"><img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=160&h=160&q=80" alt="Manos formando corazón al atardecer" style="border-radius:50%;width:80px;height:80px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {"textAlign":"center","level":3,"style":{"spacing":{"margin":{"top":"1rem","bottom":"1rem"}}}} -->
+<h3 class="wp-block-heading has-text-align-center" style="margin-top:1rem;margin-bottom:1rem">Consejos de Estilo</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","style":{"typography":{"lineHeight":"1.6"}}} -->
+<p class="has-text-align-center" style="line-height:1.6">Consejos prácticos para vivir bien mientras viajas, desde gastronomía local hasta etiqueta cultural y bienestar.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group --></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns --></div>
+<!-- /wp:group -->
+
+<!-- wp:spacer {"height":"2rem"} -->
+<div style="height:2rem" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->'
 
 HOME_EN_ID="$(get_or_create_page home 'Home' "$HOME_EN_CONTENT")"
 BLOG_EN_ID="$(get_or_create_page blog 'Blog' "$BLOG_LOOP")"
@@ -314,6 +483,38 @@ wp post update "$P2_EN_ID" --post_category="$GUIDES_EN_ID" >/dev/null
 wp post update "$P1_ES_ID" --post_category="$GUIDES_ES_ID" >/dev/null
 wp post update "$P2_ES_ID" --post_category="$GUIDES_ES_ID" >/dev/null
 
+
+# -------------------------
+# Install Block Exporter
+# -------------------------
+echo "==> Installing WordPress Block Exporter..."
+
+# Ensure mu-plugins directory exists
+mkdir -p /var/www/html/wp-content/mu-plugins
+
+# Copy the block exporter plugin
+if cp /scripts/wp_block_exporter.php /var/www/html/wp-content/mu-plugins/; then
+    chmod 644 /var/www/html/wp-content/mu-plugins/wp_block_exporter.php
+    echo "   ✓ Block exporter file copied successfully"
+else
+    echo "   ⚠️  Failed to copy block exporter file"
+    echo "   ℹ️  Make sure the scripts directory is properly mounted"
+    exit 1
+fi
+
+# Test block exporter endpoints (using the wordpress service name for internal communication)
+echo "   Testing block exporter endpoints..."
+sleep 3  # Give WordPress time to load the mu-plugin
+
+# Try to access the endpoint from within the container network
+BLOCK_TEST=$(curl -s "http://wordpress/wp-json/wp/v2/block-schemas" 2>/dev/null || echo "")
+if [[ $BLOCK_TEST == *"total_schemas"* ]] || [[ $BLOCK_TEST == *"block_types"* ]]; then
+    echo "   ✓ Block exporter installed and working correctly"
+else
+    echo "   ⚠️  Block exporter endpoints not responding as expected"
+    echo "   ℹ️  This might be normal if WordPress is still initializing"
+    echo "   ℹ️  You can test manually: curl http://localhost:8080/wp-json/wp/v2/block-schemas"
+fi
 
 # -------------------------
 # Final flush

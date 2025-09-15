@@ -23,17 +23,10 @@ class WordPressExporter {
         console.log('🚀 Starting WordPress export...');
 
         await fs.ensureDir(this.outputDir);
-        const exportSummary = {
-            timestamp: new Date().toISOString(),
-            source: this.baseUrl,
-            languages: {},
-            assets: {
-                total: 0,
-                downloaded: 0,
-                skipped: 0,
-                errors: 0
-            }
-        };
+
+        // Variables to track export stats for console summary
+        let totalPosts = 0, totalPages = 0, totalUsers = 0;
+        let assetsResult = { downloaded: 0 };
 
         try {
             // Export content for both languages (EN and ES)
@@ -41,6 +34,10 @@ class WordPressExporter {
                 { code: 'en', name: 'English' },
                 { code: 'es', name: 'Español' }
             ];
+
+            // Export block schemas (only once, they're global)
+            console.log('🧱 Exporting WordPress block schemas...');
+            const blockSchemas = await this.exportBlockSchemas(this.outputDir);
 
             for (const language of languages) {
                 const langOutputDir = path.join(this.outputDir, language.code);
@@ -53,28 +50,24 @@ class WordPressExporter {
                 const categories = await this.exportCategories(language.code, langOutputDir);
                 const tags = await this.exportTags(language.code, langOutputDir);
 
-                exportSummary.languages[language.code] = {
-                    posts: posts.length,
-                    pages: pages.length,
-                    categories: categories.length,
-                    tags: tags.length
-                };
+                // Track totals for summary (using EN as reference)
+                if (language.code === 'en') {
+                    totalPosts = posts.length;
+                    totalPages = pages.length;
+                }
 
                 // Only export users and media once (they're global regardless of language)
                 if (language.code === 'en') {
                     const users = await this.exportUsers(this.outputDir);
                     const mediaResult = await this.exportMedia(this.outputDir);
 
-                    exportSummary.users = users.length;
-                    exportSummary.assets = mediaResult;
+                    totalUsers = users.length;
+                    assetsResult = mediaResult;
                 }
             }
 
-            // Save export summary
-            await fs.writeJson(path.join(this.outputDir, 'export-summary.json'), exportSummary, { spaces: 2 });
-
             console.log('✅ Export completed successfully!');
-            console.log(`📊 Summary: ${exportSummary.languages.en?.posts || 0} posts, ${exportSummary.languages.en?.pages || 0} pages, ${exportSummary.assets.downloaded} assets downloaded`);
+            console.log(`📊 Summary: ${totalPosts} posts, ${totalPages} pages, ${blockSchemas.total || 0} block schemas, ${assetsResult.downloaded} assets downloaded`);
         } catch (error) {
             console.error('❌ Export failed:', error);
             throw error;
@@ -82,21 +75,51 @@ class WordPressExporter {
     }
 
     async exportPosts(langCode, outputDir) {
-        console.log(`  📄 Exporting posts...`);
-        const allPosts = await this.fetchAllPaginated(`/wp-json/wp/v2/posts`);
-        const langPosts = this.filterByLanguage(allPosts, langCode);
-        await this.saveToFile(path.join(outputDir, 'posts.json'), langPosts);
-        console.log(`    ✓ Found ${langPosts.length} posts for ${langCode.toUpperCase()}`);
-        return langPosts;
+        console.log(`  📄 Exporting posts with block data...`);
+
+        try {
+            // Try to use the enhanced endpoint with block data
+            const allPosts = await this.fetchAllPaginated(`/wp-json/wp/v2/posts-with-blocks`);
+            const langPosts = this.filterByLanguage(allPosts, langCode);
+
+            await this.saveToFile(path.join(outputDir, 'posts.json'), langPosts);
+            console.log(`    ✓ Found ${langPosts.length} posts with block data for ${langCode.toUpperCase()}`);
+            return langPosts;
+
+        } catch (error) {
+            console.warn(`    ⚠️  Enhanced posts endpoint failed, falling back to standard API`);
+            // Fallback to standard REST API
+            const allPosts = await this.fetchAllPaginated(`/wp-json/wp/v2/posts`);
+            const langPosts = this.filterByLanguage(allPosts, langCode);
+
+            await this.saveToFile(path.join(outputDir, 'posts.json'), langPosts);
+            console.log(`    ✓ Found ${langPosts.length} posts for ${langCode.toUpperCase()} (without block data)`);
+            return langPosts;
+        }
     }
 
     async exportPages(langCode, outputDir) {
-        console.log(`  📋 Exporting pages...`);
-        const allPages = await this.fetchAllPaginated(`/wp-json/wp/v2/pages`);
-        const langPages = this.filterByLanguage(allPages, langCode);
-        await this.saveToFile(path.join(outputDir, 'pages.json'), langPages);
-        console.log(`    ✓ Found ${langPages.length} pages for ${langCode.toUpperCase()}`);
-        return langPages;
+        console.log(`  📋 Exporting pages with block data...`);
+
+        try {
+            // Try to use the enhanced endpoint with block data
+            const allPages = await this.fetchAllPaginated(`/wp-json/wp/v2/pages-with-blocks`);
+            const langPages = this.filterByLanguage(allPages, langCode);
+
+            await this.saveToFile(path.join(outputDir, 'pages.json'), langPages);
+            console.log(`    ✓ Found ${langPages.length} pages with block data for ${langCode.toUpperCase()}`);
+            return langPages;
+
+        } catch (error) {
+            console.warn(`    ⚠️  Enhanced pages endpoint failed, falling back to standard API`);
+            // Fallback to standard REST API
+            const allPages = await this.fetchAllPaginated(`/wp-json/wp/v2/pages`);
+            const langPages = this.filterByLanguage(allPages, langCode);
+
+            await this.saveToFile(path.join(outputDir, 'pages.json'), langPages);
+            console.log(`    ✓ Found ${langPages.length} pages for ${langCode.toUpperCase()} (without block data)`);
+            return langPages;
+        }
     }
 
     async exportCategories(langCode, outputDir) {
@@ -283,6 +306,38 @@ class WordPressExporter {
 
         return results;
     }
+
+    async exportBlockSchemas(outputDir) {
+        console.log(`  🧱 Exporting block schemas...`);
+
+        try {
+            // Use the custom REST API endpoint provided by our mu-plugin
+            const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/block-schemas`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const blockData = await response.json();
+
+            // Save block schemas to file
+            await fs.writeJson(path.join(outputDir, 'wordpress_block_schemas.json'), blockData, { spaces: 2 });
+
+            console.log(`    ✓ Exported ${blockData.total_schemas || Object.keys(blockData.block_types || {}).length} block type schemas`);
+
+            return {
+                total: blockData.total_schemas || Object.keys(blockData.block_types || {}).length,
+                data: blockData
+            };
+
+        } catch (error) {
+            console.error('    ⚠️  Failed to export block schemas:', error.message);
+            console.log('    ℹ️  Block exporter mu-plugin may not be installed. Run seed.sh to set it up.');
+            return { total: 0, data: null };
+        }
+    }
+
+
 
     // Filter content by language based on the link URL
     filterByLanguage(items, langCode) {

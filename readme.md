@@ -4,6 +4,8 @@
 
 This project is a PoC to exemplify a full WordPress 
 
+> [!NOTE]
+> Tested with: Wordpress 6.x.x (6.6.2 to be precise)
 
 ## 📁 Project Structure
 ```
@@ -60,6 +62,10 @@ Includes most of cases we want to test in a migration:
 - 1 image is hotlinked from external url (the garden one) while the other 2 are imported into the WP asset manager
 - 1 article has internal linking to another (garden post -> coffee post)
 
+It also configures:
+- Polylang for i18n
+- A custom [wp_block_exporter](/scripts/wp_block_exporter.php) for exporting block schemas
+
 Routes are slug-based, the ones created:
 - `/`, `/blog`, 3 articles ones
 - `/es/inicio`, `/es/blog-es`, 3 article ones
@@ -104,6 +110,24 @@ Imports the content into Storyblok
 
 
 ## Migration notes
+
+### Exporting components
+
+Wordpress doesn't have a clear and easy way to export Gutemberg components. 
+
+[wordpress-importer](https://github.com/storyblok/wordpress-importer/blob/9658c5d6f154223433b811438c41d02403880d7e/README.md?plain=1#L126) is relying on [rest-api-blocks](https://wordpress.org/plugins/rest-api-blocks/#description), a discontinued plugin not tested in the latest 3 WP majors.
+
+While there is no universal way to tackle this, this exporter solution is a in-Wordpress [wp_block_exporter](/scripts/wp_block_exporter.php) using the native's Wordpress Blocks API to export all core Gutemberg components.
+
+**Is it useful?** I doubt it. Most likely, in Storyblok you will have a very different set of components compared to the ones you have exported from Gutemberg. 
+
+For example, in this exact website example, Gutemberg will structure your schemas like:
+- Post page: a list of `core/heading`, `core/paragraph`, `core/list`, etc
+- Home page: a list of `core/cover`, `core/group`, `core/spacer` etc (structural + mark blocks)
+
+While in Storyblok you'll likely want (as an example):
+- Post page: `title` (text), `content` (richtext or markdown)
+- Page: `title` (text), `body` (array of bloks) > `hero` (title, image, button), `section` (title, description, grid (custom blok))
 
 ### Custom setups
 
