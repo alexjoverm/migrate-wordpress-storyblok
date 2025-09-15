@@ -321,7 +321,7 @@ class WordPressExporter {
             const blockData = await response.json();
 
             // Save block schemas to file
-            await fs.writeJson(path.join(outputDir, 'wordpress_block_schemas.json'), blockData, { spaces: 2 });
+            await fs.writeJson(path.join(outputDir, 'block_schemas.json'), blockData, { spaces: 2 });
 
             console.log(`    ✓ Exported ${blockData.total_schemas || Object.keys(blockData.block_types || {}).length} block type schemas`);
 
