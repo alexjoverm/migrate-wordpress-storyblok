@@ -47,8 +47,7 @@ class WordPressExporter {
 
                 const posts = await this.exportPosts(language.code, langOutputDir);
                 const pages = await this.exportPages(language.code, langOutputDir);
-                const categories = await this.exportCategories(language.code, langOutputDir);
-                const tags = await this.exportTags(language.code, langOutputDir);
+                const taxonomies = await this.exportTaxonomies(language.code, langOutputDir);
 
                 // Track totals for summary (using EN as reference)
                 if (language.code === 'en') {
@@ -122,22 +121,79 @@ class WordPressExporter {
         }
     }
 
-    async exportCategories(langCode, outputDir) {
-        console.log(`  🏷️  Exporting categories...`);
-        const allCategories = await this.fetchAllPaginated(`/wp-json/wp/v2/categories`);
-        const langCategories = this.filterByLanguage(allCategories, langCode);
-        await this.saveToFile(path.join(outputDir, 'categories.json'), langCategories);
-        console.log(`    ✓ Found ${langCategories.length} categories for ${langCode.toUpperCase()}`);
-        return langCategories;
-    }
+    async exportTaxonomies(langCode, outputDir) {
+        console.log(`  🏷️  Exporting taxonomies...`);
 
-    async exportTags(langCode, outputDir) {
-        console.log(`  🔖 Exporting tags...`);
-        const allTags = await this.fetchAllPaginated(`/wp-json/wp/v2/tags`);
-        const langTags = this.filterByLanguage(allTags, langCode);
-        await this.saveToFile(path.join(outputDir, 'tags.json'), langTags);
-        console.log(`    ✓ Found ${langTags.length} tags for ${langCode.toUpperCase()}`);
-        return langTags;
+        // First, get all available taxonomies from WordPress
+        const taxonomiesResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/taxonomies`);
+        const availableTaxonomies = await taxonomiesResponse.json();
+
+        const taxonomiesData = {
+            meta: {
+                language: langCode,
+                exported_at: new Date().toISOString(),
+                available_taxonomies: Object.keys(availableTaxonomies)
+            },
+            taxonomies: {}
+        };
+
+        // Track totals for console output
+        let totalTerms = 0;
+
+        // Export terms for each relevant taxonomy
+        for (const [taxonomyKey, taxonomyInfo] of Object.entries(availableTaxonomies)) {
+            // Skip taxonomies that aren't content-related
+            if (['nav_menu', 'wp_pattern_category'].includes(taxonomyKey)) {
+                continue;
+            }
+
+            console.log(`    📂 Exporting ${taxonomyInfo.name} (${taxonomyKey})...`);
+
+            try {
+                // Fetch all terms for this taxonomy
+                const endpoint = taxonomyKey === 'category' ? 'categories' :
+                    taxonomyKey === 'post_tag' ? 'tags' :
+                        `${taxonomyKey}s`; // Fallback for custom taxonomies
+
+                const allTerms = await this.fetchAllPaginated(`/wp-json/wp/v2/${endpoint}`);
+                const langTerms = this.filterByLanguage(allTerms, langCode);
+
+                taxonomiesData.taxonomies[taxonomyKey] = {
+                    info: {
+                        name: taxonomyInfo.name,
+                        slug: taxonomyKey,
+                        hierarchical: taxonomyInfo.hierarchical,
+                        public: taxonomyInfo.public,
+                        rest_base: taxonomyInfo.rest_base
+                    },
+                    terms: langTerms,
+                    count: langTerms.length
+                };
+
+                totalTerms += langTerms.length;
+                console.log(`      ✓ Found ${langTerms.length} terms`);
+
+            } catch (error) {
+                console.warn(`      ⚠️  Failed to export ${taxonomyKey}:`, error.message);
+                taxonomiesData.taxonomies[taxonomyKey] = {
+                    info: {
+                        name: taxonomyInfo.name,
+                        slug: taxonomyKey,
+                        hierarchical: taxonomyInfo.hierarchical,
+                        public: taxonomyInfo.public,
+                        rest_base: taxonomyInfo.rest_base
+                    },
+                    terms: [],
+                    count: 0,
+                    error: error.message
+                };
+            }
+        }
+
+        await this.saveToFile(path.join(outputDir, 'taxonomies.json'), taxonomiesData);
+        console.log(`    ✓ Found ${totalTerms} total taxonomy terms for ${langCode.toUpperCase()}`);
+
+        return taxonomiesData;
     }
 
     async exportUsers(outputDir) {

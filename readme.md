@@ -8,6 +8,7 @@ This project is a PoC to exemplify a full WordPress
 > Tested with: Wordpress 6.x.x (6.6.2 to be precise)
 
 ## 📁 Project Structure
+
 ```
 packages/
 ├── export/          # WordPress content exporter
@@ -49,9 +50,9 @@ scripts/
    ```
 
 
-## What's covered
+## What's covered? Migration flow in depth
 
-**Seeded WordPress instance:**
+### Step 1. Seededing a WordPress instance
 
 Includes most of cases we want to test in a migration:
 
@@ -71,15 +72,28 @@ Routes are slug-based, the ones created:
 - `/es/inicio`, `/es/blog-es`, 3 article ones
 
 
-**Export Package:**
+### Step 2 - Export
 
-Extracts content from WordPress REST API
+When running `pnpm run export`, a structure similar to this will be created:
 
-- Supports multilingual content (EN/ES)
-- Fetches posts, pages, categories, tags, users, media
-- Generates also a `block_schemas.json` with all Gutemberg components, + adds a `blocks` property to any item within `posts.json` and `pages.json`.
+```
+exported-data/
+├── assets/             # The downloaded assets
+├── media.json          # The metadata for the downloaded assets
+├── users.json          # All users
+├── block_schemas.json  # All Gutemberg blocks
+│ 
+└── en/                     # A folder per each i18n language
+    ├── pages.json          # All pages (`type: page`)
+    ├── posts.json          # All posts (`type: post`)
+    └── taxonomies.json     # All taxonomies (`category`, `post_tag`)
+```
 
-**Mapping Package:**
+A few notes:
+- Wordpress has 2 main taxonomies: `category` and `post_tag`. While category is more complex and can have hierarchy, post_tag is merely a tag string.
+- `pages.json` and `posts.json` also include a `blocks` property, with a Guttermberg block structure representation of the content.
+
+### Step 3 - Mapping
 
 Transforms WordPress data to Storyblok format
 
@@ -87,7 +101,7 @@ Transforms WordPress data to Storyblok format
 - Creates datasources for categories and authors
 - Handles featured images and internal links
 
-**Import Package:**
+### Step 4 - Import
 
 Imports the content into Storyblok
 
