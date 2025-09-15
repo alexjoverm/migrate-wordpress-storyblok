@@ -51,9 +51,9 @@ services:
       ADMIN_PASS: admin123
       ADMIN_EMAIL: admin@example.com
       BLOG_TITLE: Seeded WP
-      AUTHOR_USER: writer
-      AUTHOR_PASS: writer123
-      AUTHOR_EMAIL: writer@example.com
+      AUTHOR_USER: "John Doe"
+      AUTHOR_PASS: johndoe
+      AUTHOR_EMAIL: johndoe@example.com
     volumes:
       - ./wp_data:/var/www/html
       - ./scripts:/scripts
