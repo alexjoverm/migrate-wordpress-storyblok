@@ -90,7 +90,7 @@ exported-data/
 ```
 
 A few notes:
-- Wordpress has 2 main taxonomies: `category` and `post_tag`. While category is more complex and can have hierarchy, post_tag is merely a tag string.
+- Wordpress has 2 main taxonomies: `category` and `post_tag`. While category is more complex and can have hierarchy or translations, post_tag is merely a tag string.
 - `pages.json` and `posts.json` also include a `blocks` property, with a Guttermberg block structure representation of the content.
 
 ### Step 3 - Mapping
