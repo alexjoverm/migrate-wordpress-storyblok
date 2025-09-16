@@ -95,6 +95,18 @@ A few notes:
 
 ### Step 3 - Mapping
 
+Here's where most of manual work will happen for the users.
+
+There are decisions that need to be taken:
+- How to structure the i18n content? Field-based or folder-based translations?
+- How to sort taxonomies? As tags? Datasources? Stories? Each will have their own pros and const (for instance: Datasources or Stories will be translatable; Tags not, but they'll benefit from search functionality)
+- Richtext content transformed into Markdown or Richtext?
+- How exactly to map the Content Types and Blocks?
+
+Additionally, **internal linking** it's a real challenge. How to keep references between posts, pages and assets?
+
+
+
 Transforms WordPress data to Storyblok format
 
 - HTML to rich text conversion
@@ -199,3 +211,25 @@ Depending on the user's intention, you can use `tags`, `datasources` or `stories
 **2. Mapping tooling**
 
 
+
+
+# Comparison with other CMS migration tooling
+
+## Contentful
+
+- The claim to have a Migrations DSL - it's more of a tool to perform programatic _schema migrations_ rather than content migration from other CMS.
+
+### Import command
+
+It's like a `push everything`. Takes care not only about:
+- content
+- assets
+- components
+
+but also about:
+- roles
+- tags (but only tag references from content. Tags need to exist in the settings for target space)
+- locales (even though they must be created in the target space)
+- webhooks (but credentials need to be added afterwards in target space)
+
+[More on import command](https://www.contentful.com/developers/docs/tutorials/cli/import-and-export/#import-content)

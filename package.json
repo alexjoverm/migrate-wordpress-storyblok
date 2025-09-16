@@ -9,10 +9,9 @@
     "scripts": {
         "export": "pnpm --filter export start",
         "map": "pnpm --filter mapping start",
+        "map:sample": "pnpm --filter mapping sample",
         "import": "pnpm --filter import start",
         "migrate": "pnpm export && pnpm map && pnpm import",
-        "dev:export": "pnpm --filter export dev",
-        "dev:mapping": "pnpm --filter mapping dev",
         "dev:import": "pnpm --filter import dev"
     },
     "devDependencies": {
