@@ -11,8 +11,7 @@
         "map": "pnpm --filter mapping start",
         "map:sample": "pnpm --filter mapping sample",
         "import": "pnpm --filter import start",
-        "migrate": "pnpm export && pnpm map && pnpm import",
-        "dev:import": "pnpm --filter import dev"
+        "migrate": "pnpm export && pnpm map && pnpm import"
     },
     "devDependencies": {
         "nodemon": "^3.0.0"

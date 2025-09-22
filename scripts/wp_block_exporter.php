@@ -160,10 +160,19 @@ class WP_Block_Exporter
         $per_page = $request->get_param('per_page');
         $page = $request->get_param('page');
         $lang = $request->get_param('lang');
+        $status = $request->get_param('status');
+
+        // Default to publish if no status specified
+        if (empty($status)) {
+            $status = 'publish';
+        }
+
+        // Convert comma-separated statuses to array
+        $post_statuses = array_map('trim', explode(',', $status));
 
         $args = array(
             'post_type' => 'post',
-            'post_status' => 'publish',
+            'post_status' => $post_statuses,
             'posts_per_page' => $per_page,
             'paged' => $page,
             'orderby' => 'date',
@@ -188,10 +197,19 @@ class WP_Block_Exporter
     {
         $per_page = $request->get_param('per_page');
         $page = $request->get_param('page');
+        $status = $request->get_param('status');
+
+        // Default to publish if no status specified
+        if (empty($status)) {
+            $status = 'publish';
+        }
+
+        // Convert comma-separated statuses to array
+        $post_statuses = array_map('trim', explode(',', $status));
 
         $args = array(
             'post_type' => 'page',
-            'post_status' => 'publish',
+            'post_status' => $post_statuses,
             'posts_per_page' => $per_page,
             'paged' => $page,
             'orderby' => 'menu_order',

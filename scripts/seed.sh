@@ -381,15 +381,15 @@ cp seeds/beach.jpg "${UPLOAD_PATH}/beach-2.jpg" 2>/dev/null || true
 # Garden uses external FEATURED via _ext_featured_url (not uploaded).
 # -------------------------
 create_post_if_missing () {
-  local slug="$1" title="$2" content="$3"
+  local slug="$1" title="$2" content="$3" status="${4:-publish}"
   local id
   id="$(wp post list --post_type=post --name="$slug" --field=ID --posts_per_page=1)"
   if [[ -z "$id" ]]; then
-    id="$(wp post create --post_type=post --post_status=publish \
+    id="$(wp post create --post_type=post --post_status="$status" \
       --post_title="$title" --post_name="$slug" \
       --post_content="$content" --post_author="${AUTHOR_ID}" --porcelain)"
   else
-    wp post update "$id" --post_title="$title" --post_content="$content" --post_author="${AUTHOR_ID}" >/dev/null
+    wp post update "$id" --post_title="$title" --post_content="$content" --post_author="${AUTHOR_ID}" --post_status="$status" >/dev/null
   fi
   echo "$id"
 }
@@ -410,7 +410,7 @@ P3_EN_CONTENT='<!-- wp:heading --><h2>Sun, Sea, and Strolls</h2><!-- /wp:heading
 
 P1_EN_ID="$(create_post_if_missing building-a-tiny-garden "Building a Tiny Garden" "$P1_EN_CONTENT")"
 P2_EN_ID="$(create_post_if_missing how-to-brew-better-coffee "How to Brew Better Coffee" "$P2_EN_CONTENT")"
-P3_EN_ID="$(create_post_if_missing weekend-in-alicante "Weekend in Alicante" "$P3_EN_CONTENT")"
+P3_EN_ID="$(create_post_if_missing weekend-in-alicante "Weekend in Alicante" "$P3_EN_CONTENT" "draft")"
 
 # ES contents
 P1_ES_CONTENT='<!-- wp:heading --><h2>Empieza en pequeño, crece feliz</h2><!-- /wp:heading -->
@@ -427,7 +427,7 @@ P3_ES_CONTENT='<!-- wp:heading --><h2>Sol, mar y paseos</h2><!-- /wp:heading -->
 
 P1_ES_ID="$(create_post_if_missing como-crear-un-mini-jardin "Cómo crear un mini jardín" "$P1_ES_CONTENT")"
 P2_ES_ID="$(create_post_if_missing como-preparar-mejor-cafe "Cómo preparar mejor café" "$P2_ES_CONTENT")"
-P3_ES_ID="$(create_post_if_missing fin-de-semana-en-alicante "Fin de semana en Alicante" "$P3_ES_CONTENT")"
+P3_ES_ID="$(create_post_if_missing fin-de-semana-en-alicante "Fin de semana en Alicante" "$P3_ES_CONTENT" "draft")"
 
 # Featured images:
 # - Garden: external featured (no _thumbnail_id)
@@ -515,6 +515,26 @@ else
     echo "   ℹ️  This might be normal if WordPress is still initializing"
     echo "   ℹ️  You can test manually: curl http://localhost:8080/wp-json/wp/v2/block-schemas"
 fi
+
+# -------------------------
+# Display WordPress Credentials
+# -------------------------
+echo "==> WordPress Setup Complete!"
+echo ""
+echo "=============================="
+echo "🔑 WORDPRESS CREDENTIALS"
+echo "=============================="
+echo "WordPress URL: $BASE_URL"
+echo "Admin Username: $ADMIN_USER"
+echo "Admin Password: $ADMIN_PASS"
+echo ""
+echo "For draft content export, add to your .env file:"
+echo "WP_USERNAME=$ADMIN_USER"
+echo "WP_APP_PASSWORD=$ADMIN_PASS"
+echo ""
+echo "Note: You can create Application Passwords in WordPress Admin"
+echo "for better security instead of using admin password."
+echo "=============================="
 
 # -------------------------
 # Final flush

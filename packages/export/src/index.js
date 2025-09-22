@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { config } from 'dotenv';
+import { program } from 'commander';
 import { findWorkspaceRoot } from '@migration/shared';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -11,12 +12,59 @@ config();
 
 const WORDPRESS_BASE_URL = process.env.WORDPRESS_URL || 'http://localhost:8080';
 const WORKSPACE_ROOT = findWorkspaceRoot();
-const OUTPUT_DIR = process.env.OUTPUT_DIR || path.join(WORKSPACE_ROOT, 'exported-data');
+const EXPORT_OUTPUT_DIR = process.env.EXPORT_OUTPUT_DIR || path.join(WORKSPACE_ROOT, 'exported-data');
+
+// WordPress authentication (optional - for draft/private content access)
+const WP_USERNAME = process.env.WP_USERNAME || null;
+const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || null;
+
+// Configure Commander.js
+program
+    .name('wp-export')
+    .description('WordPress to Storyblok content exporter')
+    .version('1.0.0')
+    .option('-l, --languages <codes>', 'comma-separated list of language codes (e.g., "en,es,fr"). If not specified, exports all content regardless of language')
+    .option('-m, --multiple-files', 'export each post/page as individual file instead of single JSON', false)
+    .option('-s, --status <statuses>', 'comma-separated list of post statuses to export (e.g., "publish,draft,private"). Options: publish, draft, private, pending, future, all. Default: all', 'all')
+    .helpOption('-h, --help', 'display help for command')
+    .addHelpText('after', `
+Examples:
+  $ npm run export
+  $ npm run export --languages "en,es,fr"
+  $ npm run export --multiple-files
+  $ npm run export --status "publish,draft"
+  $ npm run export --status "draft"
+  $ npm run export --languages "en,de" --multiple-files --status "publish"
+
+Environment Variables:
+  WORDPRESS_URL        WordPress site URL (default: http://localhost:8080)
+  EXPORT_OUTPUT_DIR    Export output directory (default: ./exported-data)
+  WP_USERNAME          WordPress username (optional - for draft/private content)
+  WP_APP_PASSWORD      WordPress application password (optional - for draft/private content)
+`);
 
 class WordPressExporter {
-    constructor(baseUrl, outputDir) {
+    constructor(baseUrl, outputDir, options = {}) {
         this.baseUrl = baseUrl.replace(/\/$/, '');
         this.outputDir = outputDir;
+        this.languages = options.languages || null; // null means export all content regardless of language
+        this.multipleFiles = options.multipleFiles || false;
+        this.statuses = options.statuses || 'all'; // Content statuses to export
+    }
+
+    // Helper method to create authenticated headers
+    getAuthHeaders() {
+        const headers = {
+            'User-Agent': 'WordPress-Exporter/1.0'
+        };
+
+        // Add authentication if available (for draft/private content access)
+        if (WP_USERNAME && WP_APP_PASSWORD) {
+            const authString = Buffer.from(`${WP_USERNAME}:${WP_APP_PASSWORD}`).toString('base64');
+            headers['Authorization'] = `Basic ${authString}`;
+        }
+
+        return headers;
     }
 
     async exportAll() {
@@ -29,39 +77,56 @@ class WordPressExporter {
         let assetsResult = { downloaded: 0 };
 
         try {
-            // Export content for both languages (EN and ES)
-            const languages = [
-                { code: 'en', name: 'English' },
-                { code: 'es', name: 'Español' }
-            ];
-
             // Export block schemas (only once, they're global)
             console.log('🧱 Exporting WordPress block schemas...');
             const blockSchemas = await this.exportBlockSchemas(this.outputDir);
 
-            for (const language of languages) {
-                const langOutputDir = path.join(this.outputDir, language.code);
-                await fs.ensureDir(langOutputDir);
+            if (this.languages === null) {
+                // Export all content without language filtering
+                console.log('🌐 Exporting all content (no language filtering)');
 
-                console.log(`📝 Exporting ${language.name} content...`);
+                const posts = await this.exportAllPosts(this.outputDir);
+                const pages = await this.exportAllPages(this.outputDir);
+                const taxonomies = await this.exportAllTaxonomies(this.outputDir);
+                const users = await this.exportUsers(this.outputDir);
+                const mediaResult = await this.exportMedia(this.outputDir);
 
-                const posts = await this.exportPosts(language.code, langOutputDir);
-                const pages = await this.exportPages(language.code, langOutputDir);
-                const taxonomies = await this.exportTaxonomies(language.code, langOutputDir);
+                totalPosts = posts.length;
+                totalPages = pages.length;
+                totalUsers = users.length;
+                assetsResult = mediaResult;
+            } else {
+                // Use dynamic languages instead of hardcoded ones
+                console.log(`🌐 Exporting content for languages: ${this.languages.map(l => l.code || l).join(', ')}`);
 
-                // Track totals for summary (using EN as reference)
-                if (language.code === 'en') {
-                    totalPosts = posts.length;
-                    totalPages = pages.length;
-                }
+                for (const language of this.languages) {
+                    // Handle both string and object language formats
+                    const langCode = typeof language === 'string' ? language : language.code;
+                    const langName = typeof language === 'string' ? langCode.toUpperCase() : language.name;
 
-                // Only export users and media once (they're global regardless of language)
-                if (language.code === 'en') {
-                    const users = await this.exportUsers(this.outputDir);
-                    const mediaResult = await this.exportMedia(this.outputDir);
+                    const langOutputDir = path.join(this.outputDir, langCode);
+                    await fs.ensureDir(langOutputDir);
 
-                    totalUsers = users.length;
-                    assetsResult = mediaResult;
+                    console.log(`📝 Exporting ${langName} content...`);
+
+                    const posts = await this.exportPosts(langCode, langOutputDir);
+                    const pages = await this.exportPages(langCode, langOutputDir);
+                    const taxonomies = await this.exportTaxonomies(langCode, langOutputDir);
+
+                    // Track totals for summary (using first language as reference)
+                    if (this.languages.indexOf(language) === 0) {
+                        totalPosts = posts.length;
+                        totalPages = pages.length;
+                    }
+
+                    // Only export users and media once (they're global regardless of language)
+                    if (this.languages.indexOf(language) === 0) {
+                        const users = await this.exportUsers(this.outputDir);
+                        const mediaResult = await this.exportMedia(this.outputDir);
+
+                        totalUsers = users.length;
+                        assetsResult = mediaResult;
+                    }
                 }
             }
 
@@ -73,6 +138,125 @@ class WordPressExporter {
         }
     }
 
+    async exportAllPosts(outputDir) {
+        console.log(`📄 Exporting all posts with block data...`);
+
+        try {
+            // Try to use the enhanced endpoint with block data
+            const allPosts = await this.fetchAllPaginated(`/wp-json/wp/v2/posts-with-blocks`);
+
+            await this.saveToFiles(outputDir, 'posts.json', allPosts, this.multipleFiles);
+            console.log(`    ✓ Found ${allPosts.length} posts with block data`);
+            return allPosts;
+
+        } catch (error) {
+            console.warn(`    ⚠️  Enhanced posts endpoint failed, falling back to standard API`);
+            // Fallback to standard REST API
+            const allPosts = await this.fetchAllPaginated(`/wp-json/wp/v2/posts`);
+
+            await this.saveToFiles(outputDir, 'posts.json', allPosts, this.multipleFiles);
+            console.log(`    ✓ Found ${allPosts.length} posts (without block data)`);
+            return allPosts;
+        }
+    }
+
+    async exportAllPages(outputDir) {
+        console.log(`📋 Exporting all pages with block data...`);
+
+        try {
+            // Try to use the enhanced endpoint with block data
+            const allPages = await this.fetchAllPaginated(`/wp-json/wp/v2/pages-with-blocks`);
+
+            await this.saveToFiles(outputDir, 'pages.json', allPages, this.multipleFiles);
+            console.log(`    ✓ Found ${allPages.length} pages with block data`);
+            return allPages;
+
+        } catch (error) {
+            console.warn(`    ⚠️  Enhanced pages endpoint failed, falling back to standard API`);
+            // Fallback to standard REST API
+            const allPages = await this.fetchAllPaginated(`/wp-json/wp/v2/pages`);
+
+            await this.saveToFiles(outputDir, 'pages.json', allPages, this.multipleFiles);
+            console.log(`    ✓ Found ${allPages.length} pages (without block data)`);
+            return allPages;
+        }
+    }
+
+    async exportAllTaxonomies(outputDir) {
+        console.log(`🏷️  Exporting all taxonomies...`);
+
+        // First, get all available taxonomies from WordPress
+        const taxonomiesResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/taxonomies`, {
+            headers: this.getAuthHeaders()
+        });
+        const availableTaxonomies = await taxonomiesResponse.json();
+
+        const taxonomiesData = {
+            meta: {
+                exported_at: new Date().toISOString(),
+                available_taxonomies: Object.keys(availableTaxonomies)
+            },
+            taxonomies: {}
+        };
+
+        // Track totals for console output
+        let totalTerms = 0;
+
+        // Export terms for each relevant taxonomy
+        for (const [taxonomyKey, taxonomyInfo] of Object.entries(availableTaxonomies)) {
+            // Skip taxonomies that aren't content-related
+            if (['nav_menu', 'wp_pattern_category'].includes(taxonomyKey)) {
+                continue;
+            }
+
+            console.log(`    📂 Exporting ${taxonomyInfo.name} (${taxonomyKey})...`);
+
+            try {
+                // Fetch all terms for this taxonomy
+                const endpoint = taxonomyKey === 'category' ? 'categories' :
+                    taxonomyKey === 'post_tag' ? 'tags' :
+                        `${taxonomyKey}s`; // Fallback for custom taxonomies
+
+                const allTerms = await this.fetchAllPaginated(`/wp-json/wp/v2/${endpoint}`);
+
+                taxonomiesData.taxonomies[taxonomyKey] = {
+                    info: {
+                        name: taxonomyInfo.name,
+                        slug: taxonomyKey,
+                        hierarchical: taxonomyInfo.hierarchical,
+                        public: taxonomyInfo.public,
+                        rest_base: taxonomyInfo.rest_base
+                    },
+                    terms: allTerms,
+                    count: allTerms.length
+                };
+
+                totalTerms += allTerms.length;
+                console.log(`      ✓ Found ${allTerms.length} terms`);
+
+            } catch (error) {
+                console.warn(`      ⚠️  Failed to export ${taxonomyKey}:`, error.message);
+                taxonomiesData.taxonomies[taxonomyKey] = {
+                    info: {
+                        name: taxonomyInfo.name,
+                        slug: taxonomyKey,
+                        hierarchical: taxonomyInfo.hierarchical,
+                        public: taxonomyInfo.public,
+                        rest_base: taxonomyInfo.rest_base
+                    },
+                    terms: [],
+                    count: 0,
+                    error: error.message
+                };
+            }
+        }
+
+        await this.saveToFile(path.join(outputDir, 'taxonomies.json'), taxonomiesData);
+        console.log(`    ✓ Found ${totalTerms} total taxonomy terms`);
+
+        return taxonomiesData;
+    }
+
     async exportPosts(langCode, outputDir) {
         console.log(`  📄 Exporting posts with block data...`);
 
@@ -81,7 +265,7 @@ class WordPressExporter {
             const allPosts = await this.fetchAllPaginated(`/wp-json/wp/v2/posts-with-blocks`);
             const langPosts = this.filterByLanguage(allPosts, langCode);
 
-            await this.saveToFile(path.join(outputDir, 'posts.json'), langPosts);
+            await this.saveToFiles(outputDir, 'posts.json', langPosts, this.multipleFiles);
             console.log(`    ✓ Found ${langPosts.length} posts with block data for ${langCode.toUpperCase()}`);
             return langPosts;
 
@@ -91,7 +275,7 @@ class WordPressExporter {
             const allPosts = await this.fetchAllPaginated(`/wp-json/wp/v2/posts`);
             const langPosts = this.filterByLanguage(allPosts, langCode);
 
-            await this.saveToFile(path.join(outputDir, 'posts.json'), langPosts);
+            await this.saveToFiles(outputDir, 'posts.json', langPosts, this.multipleFiles);
             console.log(`    ✓ Found ${langPosts.length} posts for ${langCode.toUpperCase()} (without block data)`);
             return langPosts;
         }
@@ -105,7 +289,7 @@ class WordPressExporter {
             const allPages = await this.fetchAllPaginated(`/wp-json/wp/v2/pages-with-blocks`);
             const langPages = this.filterByLanguage(allPages, langCode);
 
-            await this.saveToFile(path.join(outputDir, 'pages.json'), langPages);
+            await this.saveToFiles(outputDir, 'pages.json', langPages, this.multipleFiles);
             console.log(`    ✓ Found ${langPages.length} pages with block data for ${langCode.toUpperCase()}`);
             return langPages;
 
@@ -115,7 +299,7 @@ class WordPressExporter {
             const allPages = await this.fetchAllPaginated(`/wp-json/wp/v2/pages`);
             const langPages = this.filterByLanguage(allPages, langCode);
 
-            await this.saveToFile(path.join(outputDir, 'pages.json'), langPages);
+            await this.saveToFiles(outputDir, 'pages.json', langPages, this.multipleFiles);
             console.log(`    ✓ Found ${langPages.length} pages for ${langCode.toUpperCase()} (without block data)`);
             return langPages;
         }
@@ -125,7 +309,9 @@ class WordPressExporter {
         console.log(`  🏷️  Exporting taxonomies...`);
 
         // First, get all available taxonomies from WordPress
-        const taxonomiesResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/taxonomies`);
+        const taxonomiesResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/taxonomies`, {
+            headers: this.getAuthHeaders()
+        });
         const availableTaxonomies = await taxonomiesResponse.json();
 
         const taxonomiesData = {
@@ -324,18 +510,36 @@ class WordPressExporter {
         const results = [];
         let page = 1;
         let hasMore = true;
+        const maxPerPage = 100; // WordPress REST API maximum
+
+        console.log(`    📄 Fetching paginated data from ${endpoint}...`);
 
         while (hasMore) {
             try {
                 const url = new URL(`${this.baseUrl}${endpoint}`);
                 url.searchParams.set('page', page.toString());
-                url.searchParams.set('per_page', '100');
+                url.searchParams.set('per_page', maxPerPage.toString());
 
-                const response = await fetch(url.toString());
+                // Include specified post statuses (requires authentication for draft/private content)
+                // Without auth, only published content will be returned by WordPress
+                if (endpoint.includes('/posts') || endpoint.includes('/pages')) {
+                    let statusesToRequest = this.statuses;
+
+                    // Handle 'all' status option
+                    if (statusesToRequest === 'all') {
+                        statusesToRequest = 'publish,draft,private,pending,future';
+                    }
+
+                    url.searchParams.set('status', statusesToRequest);
+                }
+
+                const response = await fetch(url.toString(), {
+                    headers: this.getAuthHeaders()
+                });
 
                 if (!response.ok) {
                     if (response.status === 400 && page > 1) {
-                        // No more pages
+                        // No more pages available
                         hasMore = false;
                         continue;
                     }
@@ -343,23 +547,49 @@ class WordPressExporter {
                 }
 
                 const data = await response.json();
+
+                // Handle empty responses
+                if (!Array.isArray(data) || data.length === 0) {
+                    hasMore = false;
+                    continue;
+                }
+
                 results.push(...data);
 
-                // Check if there are more pages
-                const totalPages = parseInt(response.headers.get('x-wp-totalpages') || '1');
-                hasMore = page < totalPages;
+                // Check pagination headers (multiple fallback methods)
+                const totalPages = parseInt(response.headers.get('x-wp-totalpages')) ||
+                    parseInt(response.headers.get('X-WP-TotalPages')) || 1;
+                const totalItems = parseInt(response.headers.get('x-wp-total')) ||
+                    parseInt(response.headers.get('X-WP-Total')) || 0;
+
+                // Log progress for large datasets
+                if (page === 1 && totalItems > 0) {
+                    console.log(`      Found ${totalItems} total items across ${totalPages} pages`);
+                } else if (page % 10 === 0) {
+                    console.log(`      Progress: Page ${page}/${totalPages} (${results.length} items collected)`);
+                }
+
+                // Determine if more pages exist
+                hasMore = page < totalPages && data.length === maxPerPage;
                 page++;
+
+                // Add small delay for very large datasets to be respectful to the server
+                if (totalItems > 1000) {
+                    await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+                }
+
             } catch (error) {
                 if (error.message.includes('400') && page > 1) {
-                    // No more pages
+                    // WordPress returns 400 when no more pages exist
                     hasMore = false;
                 } else {
-                    console.error(`Error fetching ${endpoint} page ${page}:`, error.message);
+                    console.error(`      ❌ Error fetching ${endpoint} page ${page}:`, error.message);
                     throw error;
                 }
             }
         }
 
+        console.log(`    ✓ Collected ${results.length} items from ${page - 1} pages`);
         return results;
     }
 
@@ -368,7 +598,9 @@ class WordPressExporter {
 
         try {
             // Use the custom REST API endpoint provided by our mu-plugin
-            const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/block-schemas`);
+            const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/block-schemas`, {
+                headers: this.getAuthHeaders()
+            });
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -417,11 +649,87 @@ class WordPressExporter {
         await fs.writeJson(filePath, data, { spaces: 2 });
         console.log(`    ✓ Saved ${data.length} items to ${path.basename(filePath)}`);
     }
+
+    async saveToFiles(outputDir, filename, data, multipleFiles = false) {
+        if (!multipleFiles) {
+            // Save as single file
+            await this.saveToFile(path.join(outputDir, filename), data);
+            return;
+        }
+
+        // Save as multiple files
+        const baseName = path.parse(filename).name;
+        const multipleFilesDir = path.join(outputDir, baseName);
+        await fs.ensureDir(multipleFilesDir);
+
+        console.log(`    ✓ Saving ${data.length} items as individual files to ${baseName}/`);
+
+        for (const item of data) {
+            // Create a safe filename from the item title or slug
+            let itemFilename = item.slug ||
+                (item.title?.rendered || item.title || 'untitled')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '') ||
+                `item-${item.id}`;
+
+            // Ensure filename is not too long and ends with .json
+            if (itemFilename.length > 100) {
+                itemFilename = itemFilename.substring(0, 100);
+            }
+            itemFilename += '.json';
+
+            const itemPath = path.join(multipleFilesDir, itemFilename);
+            await fs.writeJson(itemPath, item, { spaces: 2 });
+        }
+
+        console.log(`    ✓ Individual files saved to ${baseName}/`);
+    }
 }
 
 async function main() {
-    const exporter = new WordPressExporter(WORDPRESS_BASE_URL, OUTPUT_DIR);
-    await exporter.exportAll();
+    try {
+        program.parse();
+        const options = program.opts();
+
+        // Parse languages if provided
+        let languages = null;
+        if (options.languages) {
+            languages = options.languages.split(',').map(lang => ({
+                code: lang.trim(),
+                name: lang.trim().toUpperCase()
+            }));
+        }
+        // If no languages specified, languages remains null (export all content)
+
+        const exporterOptions = {
+            languages,
+            multipleFiles: options.multipleFiles,
+            statuses: options.status
+        };
+
+        // Use environment variables for URLs and paths
+        const wordpressUrl = WORDPRESS_BASE_URL;
+        const outputDir = EXPORT_OUTPUT_DIR;
+
+        console.log(`🔧 Configuration:`);
+        if (languages) {
+            console.log(`   Languages: ${languages.map(l => l.code).join(', ')}`);
+        } else {
+            console.log(`   Languages: all (no filtering)`);
+        }
+        console.log(`   Multiple files: ${exporterOptions.multipleFiles ? 'enabled' : 'disabled'}`);
+        console.log(`   Content statuses: ${exporterOptions.statuses}`);
+        console.log(`   Authentication: ${WP_USERNAME && WP_APP_PASSWORD ? 'enabled (can access drafts)' : 'disabled (published content only)'}`);
+        console.log(`   Output directory: ${outputDir}`);
+        console.log(`   WordPress URL: ${wordpressUrl}\n`);
+
+        const exporter = new WordPressExporter(wordpressUrl, outputDir, exporterOptions);
+        await exporter.exportAll();
+    } catch (error) {
+        console.error('❌ Export failed:', error.message);
+        process.exit(1);
+    }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
