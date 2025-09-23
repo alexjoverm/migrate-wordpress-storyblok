@@ -320,26 +320,6 @@ If no content is exported:
 3. Check the `--status` parameter matches your content's publication status
 4. Try without filtering: `pnpm run export` (exports all content with authentication)
 
-### Content Status Filtering
-
-- **Published content** (`--status "publish"`): No authentication required
-- **Draft content** (`--status "draft"`): Requires authentication 
-- **All content** (`--status "all"`): Requires authentication, exports all statuses
-- **Mixed statuses** (`--status "publish,draft"`): Exports specified statuses
-
-**Examples:**
-```bash
-# Export only published content (no auth needed)
-pnpm run export --status "publish"
-
-# Export only draft content (auth required) 
-WP_USERNAME=admin WP_APP_PASSWORD=admin123 pnpm run export --status "draft"
-
-# Export both published and draft
-WP_USERNAME=admin WP_APP_PASSWORD=admin123 pnpm run export --status "publish,draft"
-```
-
-
 
 ## License
 
