@@ -1,0 +1,57 @@
+{
+    "name": "wp-to-storyblok",
+    "version": "1.0.0",
+    "description": "WordPress to Storyblok migration plugin for Storyblok CLI",
+    "author": "Migration Tools",
+    "homepage": "https://github.com/alexjoverm/migrate-wordpress-storyblok",
+    "repository": "https://github.com/alexjoverm/migrate-wordpress-storyblok",
+    "keywords": [
+        "storyblok",
+        "cli",
+        "plugin",
+        "wordpress",
+        "migration"
+    ],
+    "main": "index.js",
+    "commands": [
+        {
+            "name": "export",
+            "description": "Export WordPress content for Storyblok migration",
+            "options": [
+                {
+                    "flags": "-l, --languages <codes>",
+                    "description": "Comma-separated language codes (e.g., \"en,es,fr\")"
+                },
+                {
+                    "flags": "-m, --multiple-files",
+                    "description": "Export each post/page as individual file"
+                },
+                {
+                    "flags": "-s, --status <statuses>",
+                    "description": "Post statuses to export: publish,draft,private,pending,future,all",
+                    "default": "all"
+                },
+                {
+                    "flags": "-o, --output-dir <path>",
+                    "description": "Output directory for exported data",
+                    "default": "./exported-data"
+                }
+            ]
+        },
+        {
+            "name": "mapping",
+            "description": "Transform WordPress data to Storyblok format",
+            "aliases": [
+                "map",
+                "transform"
+            ],
+            "options": [
+                {
+                    "flags": "-c, --config <path>",
+                    "description": "Path to mapping configuration file (relative to cwd)",
+                    "required": true
+                }
+            ]
+        }
+    ]
+}
