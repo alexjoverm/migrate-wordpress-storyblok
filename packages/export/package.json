@@ -3,11 +3,18 @@
     "version": "1.0.0",
     "description": "WordPress content exporter",
     "main": "src/index.js",
+    "bin": {
+        "wp-export": "src/cli.cjs"
+    },
     "type": "module",
     "scripts": {
-        "start": "node src/index.js",
-        "export": "node src/index.js"
+        "start": "node src/cli.js",
+        "export": "node src/cli.js"
     },
+    "files": [
+        "dist",
+        "src"
+    ],
     "dependencies": {
         "@migration/shared": "workspace:*",
         "commander": "^14.0.1",

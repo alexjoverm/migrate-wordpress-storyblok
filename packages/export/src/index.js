@@ -1,47 +1,14 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { config } from 'dotenv';
-import { program } from 'commander';
 import { findWorkspaceRoot } from '@migration/shared';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-config();
-
-const WORDPRESS_BASE_URL = process.env.WORDPRESS_URL || 'http://localhost:8080';
-const WORKSPACE_ROOT = findWorkspaceRoot();
-const EXPORT_OUTPUT_DIR = process.env.EXPORT_OUTPUT_DIR || path.join(WORKSPACE_ROOT, 'exported-data');
-
 // WordPress authentication (optional - for draft/private content access)
 const WP_USERNAME = process.env.WP_USERNAME || null;
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || null;
-
-// Configure Commander.js
-program
-    .name('wp-export')
-    .description('WordPress to Storyblok content exporter')
-    .version('1.0.0')
-    .option('-l, --languages <codes>', 'comma-separated list of language codes (e.g., "en,es,fr"). If not specified, exports all content regardless of language')
-    .option('-m, --multiple-files', 'export each post/page as individual file instead of single JSON', false)
-    .option('-s, --status <statuses>', 'comma-separated list of post statuses to export (e.g., "publish,draft,private"). Options: publish, draft, private, pending, future, all. Default: all', 'all')
-    .helpOption('-h, --help', 'display help for command')
-    .addHelpText('after', `
-Examples:
-  $ npm run export
-  $ npm run export --languages "en,es,fr"
-  $ npm run export --multiple-files
-  $ npm run export --status "publish,draft"
-  $ npm run export --status "draft"
-  $ npm run export --languages "en,de" --multiple-files --status "publish"
-
-Environment Variables:
-  WORDPRESS_URL        WordPress site URL (default: http://localhost:8080)
-  EXPORT_OUTPUT_DIR    Export output directory (default: ./exported-data)
-  WP_USERNAME          WordPress username (optional - for draft/private content)
-  WP_APP_PASSWORD      WordPress application password (optional - for draft/private content)
-`);
 
 class WordPressExporter {
     constructor(baseUrl, outputDir, options = {}) {
@@ -525,9 +492,14 @@ class WordPressExporter {
                 if (endpoint.includes('/posts') || endpoint.includes('/pages')) {
                     let statusesToRequest = this.statuses;
 
-                    // Handle 'all' status option
+                    // Handle 'all' status option - but restrict based on authentication
                     if (statusesToRequest === 'all') {
-                        statusesToRequest = 'publish,draft,private,pending,future';
+                        // If we have authentication, request all statuses, otherwise just published
+                        if (WP_USERNAME && WP_APP_PASSWORD) {
+                            statusesToRequest = 'publish,draft,private,pending,future';
+                        } else {
+                            statusesToRequest = 'publish';
+                        }
                     }
 
                     url.searchParams.set('status', statusesToRequest);
@@ -687,51 +659,27 @@ class WordPressExporter {
     }
 }
 
-async function main() {
-    try {
-        program.parse();
-        const options = program.opts();
+// Export the exporter class and a function for programmatic use
+export { WordPressExporter };
 
-        // Parse languages if provided
-        let languages = null;
-        if (options.languages) {
-            languages = options.languages.split(',').map(lang => ({
-                code: lang.trim(),
-                name: lang.trim().toUpperCase()
-            }));
-        }
-        // If no languages specified, languages remains null (export all content)
+export async function exportWordPressContent(options = {}) {
+    const wordpressUrl = options.wordpressUrl || process.env.WORDPRESS_URL || 'http://localhost:8080';
+    const outputDir = options.outputDir || process.env.EXPORT_OUTPUT_DIR || path.join(findWorkspaceRoot(), 'exported-data');
 
-        const exporterOptions = {
-            languages,
-            multipleFiles: options.multipleFiles,
-            statuses: options.status
-        };
+    const exporterOptions = {
+        languages: options.languages ? options.languages.split(',').map(l => l.trim()) : null,
+        multipleFiles: options.multipleFiles || false,
+        statuses: options.status || 'all'
+    };
 
-        // Use environment variables for URLs and paths
-        const wordpressUrl = WORDPRESS_BASE_URL;
-        const outputDir = EXPORT_OUTPUT_DIR;
+    console.log('🚀 Starting WordPress content export...');
+    console.log(`   Languages: ${exporterOptions.languages ? exporterOptions.languages.join(', ') : 'all'}`);
+    console.log(`   Multiple files: ${exporterOptions.multipleFiles ? 'enabled' : 'disabled'}`);
+    console.log(`   Content statuses: ${exporterOptions.statuses}`);
+    console.log(`   Authentication: ${WP_USERNAME && WP_APP_PASSWORD ? 'enabled (can access drafts)' : 'disabled (published content only)'}`);
+    console.log(`   Output directory: ${outputDir}`);
+    console.log(`   WordPress URL: ${wordpressUrl}\n`);
 
-        console.log(`🔧 Configuration:`);
-        if (languages) {
-            console.log(`   Languages: ${languages.map(l => l.code).join(', ')}`);
-        } else {
-            console.log(`   Languages: all (no filtering)`);
-        }
-        console.log(`   Multiple files: ${exporterOptions.multipleFiles ? 'enabled' : 'disabled'}`);
-        console.log(`   Content statuses: ${exporterOptions.statuses}`);
-        console.log(`   Authentication: ${WP_USERNAME && WP_APP_PASSWORD ? 'enabled (can access drafts)' : 'disabled (published content only)'}`);
-        console.log(`   Output directory: ${outputDir}`);
-        console.log(`   WordPress URL: ${wordpressUrl}\n`);
-
-        const exporter = new WordPressExporter(wordpressUrl, outputDir, exporterOptions);
-        await exporter.exportAll();
-    } catch (error) {
-        console.error('❌ Export failed:', error.message);
-        process.exit(1);
-    }
-}
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-    main().catch(console.error);
+    const exporter = new WordPressExporter(wordpressUrl, outputDir, exporterOptions);
+    await exporter.exportAll();
 }

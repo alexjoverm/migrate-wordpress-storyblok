@@ -56,6 +56,7 @@ scripts/
 
 Includes most of cases we want to test in a migration:
 
+- Published and draft content
 - 2 languages: EN (default), and ES
 - 1 author (John Doe)
 - 3 articles with richtext content and featured images 
