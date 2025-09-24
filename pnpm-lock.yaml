@@ -91,12 +91,8 @@ importers:
       slugify:
         specifier: ^1.6.6
         version: 1.6.6
-    devDependencies:
-      unbuild:
-        specifier: ^3.6.1
-        version: 3.6.1(typescript@5.9.2)
 
-  packages/wp-to-storyblok:
+  packages/wp-migrator:
     dependencies:
       '@migration/export':
         specifier: workspace:*

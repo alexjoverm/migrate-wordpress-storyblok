@@ -1,5 +1,5 @@
 {
-  "name": "wp-to-storyblok",
+  "name": "wp-migrator",
   "version": "1.0.0",
   "description": "WordPress to Storyblok migration plugin for Storyblok CLI",
   "author": "Migration Tools",

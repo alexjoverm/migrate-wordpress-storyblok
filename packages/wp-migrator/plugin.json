@@ -1,17 +1,5 @@
 {
-    "name": "wp-to-storyblok",
-    "version": "1.0.0",
-    "description": "WordPress to Storyblok migration plugin for Storyblok CLI",
-    "author": "Migration Tools",
-    "homepage": "https://github.com/alexjoverm/migrate-wordpress-storyblok",
-    "repository": "https://github.com/alexjoverm/migrate-wordpress-storyblok",
-    "keywords": [
-        "storyblok",
-        "cli",
-        "plugin",
-        "wordpress",
-        "migration"
-    ],
+    "name": "wp-migrator",
     "main": "index.js",
     "commands": [
         {
