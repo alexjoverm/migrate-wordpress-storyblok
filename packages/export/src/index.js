@@ -666,8 +666,18 @@ export async function exportWordPressContent(options = {}) {
     const wordpressUrl = options.wordpressUrl || process.env.WORDPRESS_URL || 'http://localhost:8080';
     const outputDir = options.outputDir || process.env.EXPORT_OUTPUT_DIR || path.join(findWorkspaceRoot(), 'exported-data');
 
+    // Handle languages parameter - can be string or array
+    let processedLanguages = null;
+    if (options.languages) {
+        if (typeof options.languages === 'string') {
+            processedLanguages = options.languages.split(',').map(l => l.trim());
+        } else if (Array.isArray(options.languages)) {
+            processedLanguages = options.languages.map(l => typeof l === 'string' ? l.trim() : l);
+        }
+    }
+
     const exporterOptions = {
-        languages: options.languages ? options.languages.split(',').map(l => l.trim()) : null,
+        languages: processedLanguages,
         multipleFiles: options.multipleFiles || false,
         statuses: options.status || 'all'
     };
