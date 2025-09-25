@@ -1,16 +1,61 @@
 {
     "name": "@migration/mapping",
     "version": "1.0.0",
-    "description": "WordPress to Storyblok content mapper",
-    "main": "src/index.js",
+    "description": "Flexible WordPress to Storyblok content mapping library",
+    "main": "dist/mapping.cjs",
+    "module": "dist/mapping.mjs",
+    "types": "dist/mapping.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/mapping.mjs",
+            "require": "./dist/mapping.cjs",
+            "types": "./dist/mapping.d.ts"
+        }
+    },
     "type": "module",
     "scripts": {
-        "start": "node src/index.js"
+        "build": "unbuild",
+        "start": "node src/index.js",
+        "map": "node examples/map-content.js",
+        "map:watch": "nodemon examples/map-content.js",
+        "validate": "node scripts/validate-config.js",
+        "example": "node examples/map-content.js"
     },
+    "unbuild": {
+        "clean": true,
+        "failOnWarn": false,
+        "externals": [
+            "node-fetch",
+            "dotenv"
+        ]
+    },
+    "files": [
+        "dist",
+        "src",
+        "examples"
+    ],
     "dependencies": {
         "@migration/shared": "workspace:*",
+        "@storyblok/richtext": "^3.8.0",
         "fs-extra": "^11.2.0",
         "cheerio": "^1.0.0-rc.12",
-        "slugify": "^1.6.6"
-    }
+        "slugify": "^1.6.6",
+        "dotenv": "^16.3.1",
+        "node-fetch": "^3.3.2"
+    },
+    "devDependencies": {
+        "unbuild": "^3.6.1",
+        "nodemon": "^3.0.1"
+    },
+    "keywords": [
+        "wordpress",
+        "storyblok",
+        "migration",
+        "cms",
+        "content-mapping",
+        "html-to-richtext",
+        "transformer"
+    ],
+    "author": "Migration Tools",
+    "license": "MIT"
 }

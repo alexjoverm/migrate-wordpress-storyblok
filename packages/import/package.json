@@ -2,15 +2,42 @@
     "name": "@migration/import",
     "version": "1.0.0",
     "description": "Storyblok content importer",
-    "main": "src/index.js",
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "bin": {
+        "storyblok-import": "./dist/index.cjs"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.cjs",
+            "types": "./dist/index.d.ts"
+        }
+    },
     "type": "module",
     "scripts": {
+        "build": "unbuild",
         "start": "node src/index.js"
     },
+    "unbuild": {
+        "clean": true,
+        "failOnWarn": false,
+        "externals": [
+            "dotenv"
+        ]
+    },
+    "files": [
+        "dist",
+        "src"
+    ],
     "dependencies": {
         "@migration/shared": "workspace:*",
         "@storyblok/management-api-client": "^0.1.2",
         "fs-extra": "^11.2.0",
         "p-limit": "^5.0.0"
+    },
+    "devDependencies": {
+        "unbuild": "^3.6.1"
     }
 }
